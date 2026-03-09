@@ -1,5 +1,11 @@
 class Producto:
     def __init__(self, nombre: str, precio: float, cantidad: int):
+        if nombre == "":
+            raise ValueError("El nombre del producto no puede estar vacío")
+        if precio < 0.0:
+            raise ValueError("El precio del producto no puede ser negativo")
+        if cantidad < 0:
+            raise ValueError("La cantidad del producto no puede ser negativa")
         self.nombre = nombre
         self.precio = precio
         self.cantidad = cantidad
@@ -39,7 +45,7 @@ class Inventario:
         Añade un objeto Producto a la colección.
         Aplica el principio de composición "tiene un".
         """
-        # Validación básica: verificar que sea una instancia de Producto [10, 11]
+        # Validación básica: verificar que sea una instancia de Producto
         if isinstance(producto, Producto):
             self.productos.append(producto)
             print(f"Éxito: {producto.nombre} (${producto.precio}) cantidad: {producto.cantidad} añadido al inventario.")
@@ -47,14 +53,13 @@ class Inventario:
             raise TypeError("Solo se pueden añadir objetos de tipo Producto")
     
     def buscar_producto(self, nombre=''):
-        try:
-            valor = str(nombre)
-            for producto in self.productos:
-                if valor.lower() == producto.nombre.lower():
-                    return producto
-            return None
-        except ValueError:
-            print("Ingrese el nombre del producto a buscar")
+        if not nombre or nombre.strip() == "":
+            raise ValueError("El nombre del producto no puede estar vacío")
+        
+        for producto in self.productos:
+            if nombre.lower() == producto.nombre.lower():
+                return producto
+        return None
         
     def calcular_valor_inventario(self):
         total = 0.0
@@ -83,39 +88,54 @@ def menu_principal(mi_inventario):
                     # Validar la entrada del nombre del producto
                     while True:
                         try:
-                            nombre = str(input("Ingrese el nombre del producto: "))
-                            break
+                            nombre = input("Ingrese el nombre del producto: ").strip()
+                            if nombre == "":
+                                print("El nombre del producto no puede estar vacío")
+                            else:
+                                break
                         except ValueError:
-                            print("Ingrese el texto del nombre")
+                            print("Ingrese un nombre válido")
                     
                     # Validar la entrada del precio del producto
                     while True:
                         try:
                             precio = float(input("Ingrese el precio del producto: "))
                             if precio < 0.0:
-                                print("Ingrese un valor mayor a 0.0")
+                                print("El precio no puede ser negativo")
                             else:
                                 break
                         except ValueError:
-                            print("Ingrese un valor mayor a 0.0")
+                            print("Ingrese un valor numérico válido para el precio")
                             
                     # Validar la entrada de la cantidad del producto
                     while True:
                         try:
                             cantidad = int(input("Ingrese la cantidad de existencia del producto: "))
                             if cantidad < 0:
-                                print("Ingrese un valor mayor a 0")
+                                print("La cantidad no puede ser negativa")
                             else:
                                 break
                         except ValueError:
-                            print("Ingrese un valor mayor a 0")
+                            print("Ingrese un valor numérico entero válido para la cantidad")
                     
-                    # Instanciamos el objeto Producto hasta tener valores válidos
-                    mi_producto = Producto(nombre, precio, cantidad)
-                    mi_inventario.agregar_producto(mi_producto)
+                    # Instanciamos el objeto Producto con manejo de excepciones del constructor
+                    try:
+                        mi_producto = Producto(nombre, precio, cantidad)
+                        mi_inventario.agregar_producto(mi_producto)
+                    except ValueError as e:
+                        print(f"Error al crear el producto: {e}")
+                    except TypeError as e:
+                        print(f"Error: {e}")
                 case 2:
-                    busqueda = input("Ingrese el nombre del producto a buscar: ")
-                    print(mi_inventario.buscar_producto(busqueda))
+                    try:
+                        busqueda = input("Ingrese el nombre del producto a buscar: ")
+                        producto_encontrado = mi_inventario.buscar_producto(busqueda)
+                        if producto_encontrado:
+                            print(f"Producto encontrado: {producto_encontrado}")
+                        else:
+                            print(f"No se encontró ningún producto con el nombre '{busqueda}'")
+                    except ValueError as e:
+                        print(f"Error en la búsqueda: {e}")
                 case 3:
                     mi_inventario.listar_productos()
                 case 4:
